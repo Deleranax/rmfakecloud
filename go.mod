@@ -5,6 +5,7 @@ go 1.23.3
 toolchain go1.24.1
 
 require (
+	github.com/coreos/go-oidc/v3 v3.16.0
 	github.com/apognu/gocal v0.9.1
 	github.com/danjacques/gofslock v0.0.0-20240212154529-d899e02bfe22
 	github.com/dropbox/dropbox-sdk-go-unofficial/v6 v6.0.5
