@@ -37,6 +37,45 @@ class ApiServices {
     removeUser();
     fetch(`${constants.ROOT_URL}/logout`);
   }
+  oidcInfo() {
+    return fetch(`${constants.ROOT_URL}/oidc/info`, {
+      method: "GET",
+      headers: this.header(),
+    }).then((r) => {
+      handleError(r);
+      return r.json();
+    });
+  }
+  oidcAuth() {
+    return fetch(`${constants.ROOT_URL}/oidc/auth`, {
+      method: "GET",
+      headers: this.header()
+    })
+      .then((r) => {
+        if (!r.ok) {
+          return handleError(r);
+        }
+        return r.text();
+      })
+  }
+  oidcCallback(payload) {
+    return fetch(`${constants.ROOT_URL}/oidc/callback`, {
+      method: "POST",
+      headers: this.header(),
+      body: JSON.stringify(payload),
+    })
+      .then((r) => {
+        if (!r.ok) {
+          return handleError(r);
+        }
+        return r.text();
+      })
+      .then((text) => {
+        let user = jwtDecode(text);
+        localStorage.setItem("currentUser", JSON.stringify(user));
+        return user;
+      });
+  }
 
   upload(parent, files) {
     const formData = new FormData();
@@ -215,13 +254,14 @@ function handleError(r) {
       window.location.reload(true);
       return
     }
-    if (r.headers.get("Content-Type").startsWith("application/json")) {
-      return r.json().then(d => {throw new Error(d.error)});
+    const contentType = r.headers.get("Content-Type") || "";
+    if (contentType.startsWith("application/json")) {
+      return r.json().then(d => {throw new Error(d.error || r.statusText)});
     }
     if (r.status === 400) {
-      return r.text().then(text => {throw new Error(text)})
+      return r.text().then(text => {throw new Error(text || r.statusText)})
     }
-    return Promise.reject(r.status)
+    return Promise.reject(new Error(r.statusText || `Request failed (${r.status})`))
   }
 }
 

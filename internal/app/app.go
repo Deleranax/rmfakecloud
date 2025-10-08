@@ -11,6 +11,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/ddvk/rmfakecloud/internal/app/hub"
+	"github.com/ddvk/rmfakecloud/internal/app/oidcstate"
 	"github.com/ddvk/rmfakecloud/internal/app/passcodestore"
 	"github.com/ddvk/rmfakecloud/internal/common"
 	"github.com/ddvk/rmfakecloud/internal/config"
@@ -116,7 +117,6 @@ func (app *App) Stop() {
 	}
 }
 
-
 // NewApp constructs an app
 func NewApp(cfg *config.Config) App {
 	debugMode := log.GetLevel() >= log.DebugLevel
@@ -138,6 +138,7 @@ func NewApp(cfg *config.Config) App {
 	}
 	ntfHub := hub.NewHub()
 	pcStore := passcodestore.NewInMemory()
+	oidcStateStore := oidcstate.NewInMemory()
 	codeConnector := NewCodeConnector()
 	router := gin.Default()
 
@@ -180,7 +181,7 @@ func NewApp(cfg *config.Config) App {
 
 	app.registerRoutes(router)
 
-	uiApp := ui.New(cfg, fsStorage, codeConnector, ntfHub, pcStore, fsStorage, fsStorage, roomMgr, app.mqttBroker)
+	uiApp := ui.New(cfg, fsStorage, codeConnector, ntfHub, pcStore, oidcStateStore, fsStorage, fsStorage, roomMgr, app.mqttBroker)
 	uiApp.RegisterRoutes(router)
 
 	storageapp := fs.NewApp(cfg, fsStorage)

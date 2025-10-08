@@ -5,9 +5,12 @@ import (
 	"io/fs"
 	"net/http"
 	"path"
+	"sync"
 	"time"
 
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/ddvk/rmfakecloud/internal/app/hub"
+	"github.com/ddvk/rmfakecloud/internal/app/oidcstate"
 	"github.com/ddvk/rmfakecloud/internal/app/passcodestore"
 	"github.com/ddvk/rmfakecloud/internal/common"
 	"github.com/ddvk/rmfakecloud/internal/config"
@@ -18,6 +21,8 @@ import (
 	"github.com/ddvk/rmfakecloud/internal/ui/viewmodel"
 	webui "github.com/ddvk/rmfakecloud/ui"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
+	"golang.org/x/oauth2"
 )
 
 type backend interface {
@@ -67,16 +72,20 @@ type mqttBridge interface {
 
 // ReactAppWrapper encapsulates an app
 type ReactAppWrapper struct {
-	fs            http.FileSystem
-	prefix        string
-	cfg           *config.Config
-	userStorer    storage.UserStorer
-	codeConnector codeGenerator
-	h             *hub.Hub
-	passcodeStore passcodestore.Store
-	backends      map[common.SyncVersion]backend
-	roomManager   *screenshare.RoomManager
-	mqtt          mqttBridge
+	fs             http.FileSystem
+	prefix         string
+	cfg            *config.Config
+	userStorer     storage.UserStorer
+	codeConnector  codeGenerator
+	h              *hub.Hub
+	passcodeStore  passcodestore.Store
+	backends       map[common.SyncVersion]backend
+	oidcProvider   *oidc.Provider
+	oauth2Config   *oauth2.Config
+	oidcMu         sync.RWMutex
+	oidcStateStore oidcstate.Store
+	roomManager    *screenshare.RoomManager
+	mqtt           mqttBridge
 }
 
 // hack for serving index.html on /
@@ -89,6 +98,7 @@ func New(cfg *config.Config,
 	codeConnector codeGenerator,
 	h *hub.Hub,
 	pcStore passcodestore.Store,
+	oidcStateStore oidcstate.Store,
 	docHandler documentHandler,
 	blobHandler blobHandler,
 	roomManager *screenshare.RoomManager,
@@ -107,13 +117,14 @@ func New(cfg *config.Config,
 		hub:             h,
 	}
 	staticWrapper := ReactAppWrapper{
-		fs:            common.NewLastModifiedFS(http.FS(sub), time.Now()),
-		prefix:        "/assets",
-		cfg:           cfg,
-		userStorer:    userStorer,
-		codeConnector: codeConnector,
-		h:             h,
-		passcodeStore: pcStore,
+		fs:             common.NewLastModifiedFS(http.FS(sub), time.Now()),
+		prefix:         "/assets",
+		cfg:            cfg,
+		userStorer:     userStorer,
+		codeConnector:  codeConnector,
+		h:              h,
+		passcodeStore:  pcStore,
+		oidcStateStore: oidcStateStore,
 		backends: map[common.SyncVersion]backend{
 			common.Sync10: backend10,
 			common.Sync15: backend15,
@@ -138,4 +149,13 @@ func (w ReactAppWrapper) Open(filepath string) (http.File, error) {
 }
 func badReq(c *gin.Context, message string) {
 	c.AbortWithStatusJSON(http.StatusBadRequest, viewmodel.NewErrorResponse(message))
+}
+
+func oidcError(c *gin.Context, detail interface{}, message string) {
+	oidcErrorStatus(c, detail, message, http.StatusInternalServerError)
+}
+
+func oidcErrorStatus(c *gin.Context, detail interface{}, message string, status int) {
+	log.WithField("detail", detail).Error("OIDC authentication error")
+	c.AbortWithStatusJSON(status, viewmodel.NewErrorResponse(message))
 }

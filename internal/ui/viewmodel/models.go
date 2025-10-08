@@ -11,6 +11,19 @@ import (
 
 const trashID = "trash"
 
+// OIDCInfo OIDC related information
+type OIDCInfo struct {
+	Enabled bool   `json:"enabled"`
+	Label   string `json:"label"`
+	Only    bool   `json:"only"`
+}
+
+// OIDCCallback OIDC callback
+type OIDCCallback struct {
+	Code  string `json:"code"`
+	State string `json:"state"`
+}
+
 // LoginForm the login form
 type LoginForm struct {
 	Email    string `json:"email"`
@@ -35,8 +48,9 @@ type ChangeEmailForm struct {
 type ErrorResponse struct {
 	Error string `json:"error"`
 }
+
 func NewErrorResponse(errormsg string) ErrorResponse {
-	return ErrorResponse {
+	return ErrorResponse{
 		Error: errormsg,
 	}
 }
@@ -216,7 +230,7 @@ type User struct {
 	Email        string `json:"email"`
 	Name         string `json:"name"`
 	NewPassword  string `json:"newpassword,omitempty"`
-	IsAdmin 	 bool `json:"isAdmin"`
+	IsAdmin      bool   `json:"isAdmin"`
 	CreatedAt    time.Time
 	Integrations []string `json:"integrations,omitempty"`
 }

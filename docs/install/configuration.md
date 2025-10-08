@@ -112,3 +112,26 @@ entryPoints:
   mqtt:
     address: ":443"
 ```
+
+## OAuth2/OIDC settings
+
+To be able to log in/register with OIDC, fill the following variables:
+
+| Variable name           | Description                                                                                |
+|-------------------------|--------------------------------------------------------------------------------------------|
+| `RM_OIDC_ISSUER`        | The issuer URL (without `.well-known/openid-configuration`)                                |
+| `RM_OIDC_LABEL`         | The label of the OAuth2/OIDC log in button (on the log in page). Default: `OpenID Connect` |
+| `RM_OIDC_CLIENT_ID`     | The OIDC client ID.                                                                        |
+| `RM_OIDC_CLIENT_SECRET` | The OIDC client secret.                                                                    |
+| `RM_OIDC_ONLY`          | Disable username/password authentication                                                   |
+## OAuth2/OIDC settings
+
+To be able to log in/register with OIDC, fill the following variables:
+
+| Variable name           | Description                                                                                |
+|-------------------------|--------------------------------------------------------------------------------------------|
+| `RM_OIDC_ISSUER`        | The issuer URL (without `.well-known/openid-configuration`)                                |
+| `RM_OIDC_LABEL`         | The label of the OAuth2/OIDC log in button (on the log in page). Default: `OpenID Connect` |
+| `RM_OIDC_CLIENT_ID`     | The OIDC client ID.                                                                        |
+| `RM_OIDC_CLIENT_SECRET` | The OIDC client secret.                                                                    |
+| `RM_OIDC_ONLY`          | Disable username/password authentication                                                   |

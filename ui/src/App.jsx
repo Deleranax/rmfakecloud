@@ -24,6 +24,8 @@ import "react-toastify/dist/ReactToastify.css";
 import "./App.scss"
 
 import { pdfjs } from "react-pdf";
+import logout from "./pages/Logout/index.jsx";
+import Logout from "./pages/Logout/index.jsx";
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
   import.meta.url,
@@ -55,6 +57,7 @@ export default function App() {
                 <PrivateRoute path="/admin" roles={[Role.Admin]} component={Admin} />
 
                 <Route path="/login" component={Login} />
+                <Route path="/logout" component={Logout} />
                 <Route component={NoMatch} />
               </Switch>
             </div>

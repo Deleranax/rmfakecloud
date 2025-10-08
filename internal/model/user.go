@@ -120,7 +120,7 @@ func hashPassword(raw string) (string, error) {
 	return full, nil
 }
 
-func sanitizeEmail(email string) string {
+func SanitizeEmail(email string) string {
 	//remove all not whitelisted
 	return emailWhiteList.ReplaceAllString(email, "")
 }
@@ -132,7 +132,7 @@ func NewUser(userID string, rawPassword string) (*User, error) {
 		return nil, err
 	}
 
-	sanitizedID := sanitizeEmail(userID)
+	sanitizedID := SanitizeEmail(userID)
 	return &User{
 		ID:            sanitizedID,
 		Email:         sanitizedID,
