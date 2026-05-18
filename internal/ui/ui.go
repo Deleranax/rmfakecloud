@@ -7,6 +7,7 @@ import (
 	"path"
 	"time"
 
+	"github.com/coreos/go-oidc/v3/oidc"
 	"github.com/ddvk/rmfakecloud/internal/app/hub"
 	"github.com/ddvk/rmfakecloud/internal/app/passcodestore"
 	"github.com/ddvk/rmfakecloud/internal/common"
@@ -18,6 +19,7 @@ import (
 	"github.com/ddvk/rmfakecloud/internal/ui/viewmodel"
 	webui "github.com/ddvk/rmfakecloud/ui"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/oauth2"
 )
 
 type backend interface {
@@ -75,6 +77,8 @@ type ReactAppWrapper struct {
 	h             *hub.Hub
 	passcodeStore passcodestore.Store
 	backends      map[common.SyncVersion]backend
+	oidcProvider  *oidc.Provider
+	oauth2Config  *oauth2.Config
 	roomManager   *screenshare.RoomManager
 	mqtt          mqttBridge
 }
